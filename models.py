@@ -8,6 +8,7 @@ class ModelProvider(Enum):
 
     OLLAMA = "ollama"
     GEMINI = "gemini"
+    OPENAI = "openai"
 
 
 @runtime_checkable
@@ -389,3 +390,55 @@ class GeminiProvider:
                     f"Retrying in {sleep_time}s..."
                 )
                 time.sleep(sleep_time)
+
+
+class OpenAIProvider:
+    """OpenAI-compatible provider implementation."""
+
+    def __init__(self, api_key: Optional[str] = None, base_url: Optional[str] = None):
+        from openai import OpenAI
+
+        client_kwargs = {}
+        if api_key:
+            client_kwargs["api_key"] = api_key
+        if base_url:
+            client_kwargs["base_url"] = base_url
+
+        self.client = OpenAI(**client_kwargs)
+
+    def chat(
+        self,
+        model: str,
+        messages: List[Dict[str, str]],
+        options: Dict[str, Any] = None,
+        **kwargs
+    ) -> Dict[str, Any]:
+        """Send a chat request to OpenAI."""
+
+        request_kwargs: Dict[str, Any] = {
+            "model": model,
+            "messages": messages,
+        }
+
+        if options:
+            if "temperature" in options:
+                temperature = options["temperature"]
+                if model.startswith("gpt-5"):
+                    temperature = 1.0
+                request_kwargs["temperature"] = temperature
+            if "top_p" in options:
+                if not model.startswith("gpt-5"):
+                    request_kwargs["top_p"] = options["top_p"]
+
+        if "stream" in kwargs:
+            request_kwargs["stream"] = kwargs["stream"]
+
+        response = self.client.chat.completions.create(**request_kwargs)
+
+        if getattr(response, "choices", None):
+            message = response.choices[0].message
+            content = getattr(message, "content", "")
+            role = getattr(message, "role", "assistant")
+            return {"message": {"role": role, "content": content}}
+
+        return {"message": {"role": "assistant", "content": ""}}

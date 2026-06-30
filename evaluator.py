@@ -15,6 +15,7 @@ from prompt import (
     MODEL_PARAMETERS,
     MODEL_PROVIDER_MAPPING,
     GEMINI_API_KEY,
+    OPENAI_API_KEY
 )
 from prompts.template_manager import TemplateManager
 

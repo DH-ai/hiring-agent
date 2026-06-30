@@ -163,7 +163,7 @@ def _evaluate_resume(
     resume_data: JSONResume, github_data: dict = None, blog_data: dict = None
 ) -> Optional[EvaluationData]:
     """Evaluate the resume using AI and display results."""
-
+    print(f"Evaluating resume using model: {DEFAULT_MODEL}")
     model_params = MODEL_PARAMETERS.get(DEFAULT_MODEL)
     evaluator = ResumeEvaluator(model_name=DEFAULT_MODEL, model_params=model_params)
 
